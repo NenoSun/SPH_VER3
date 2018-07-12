@@ -1,0 +1,60 @@
+#include<string>
+#include<fstream>
+#include<sstream>
+#include<iostream>
+#include<vector>
+
+using namespace std;
+
+struct Float3 {
+	float x;
+	float y;
+	float z;
+
+};
+
+int main(int argv, char** argc) {
+	string line;
+	ifstream myfile("E:\\SPH Previous Work\\SPlisHSPlasH\\data\\models\\Dragon_50k.obj");
+	int count = 0;
+	vector<Float3> container;
+	Float3 temp;
+	temp.x = -99.0f; temp.y = -99.0f; temp.z = -99.0f;
+	if (myfile.is_open())
+	{
+		while (getline(myfile, line))
+		{
+			if (line.substr(0, 1) == "v") {
+				istringstream iss(line);
+				do {
+					string subs;
+					iss >> subs;
+					if (subs == "" || subs == "v")
+						continue;
+					if (temp.x == -99.0&&temp.y == -99.0&&temp.z == -99.0) {
+						temp.x = stof(subs);
+						continue;
+					}
+					else if (temp.x != -99.0&&temp.y == -99.0&&temp.z == -99.0) {
+						temp.y = stof(subs);
+						continue;
+					}
+					else if (temp.x != -99.0&&temp.y != -99.0&&temp.z == -99.0) {
+						temp.z = stof(subs);
+						continue;
+					}
+				} while (iss);
+				container.push_back(temp);
+				temp.x = -99.0f; temp.y = -99.0f; temp.z = -99.0f;
+			}
+		}
+		myfile.close();
+
+		for (int i = 0; i < container.size(); i++) {
+			std::cout << container[i].x << " " << container[i].y << " " << container[i].z << std::endl;
+		}
+	}
+	else cout << "Unable to open file";
+
+	system("pause");
+}
