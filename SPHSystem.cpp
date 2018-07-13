@@ -127,7 +127,7 @@ SPHSystem::SPHSystem()
 	this->Adhesion_coff = 0.007f/ pow(h, 3.25);
 #endif
 
-#ifdef KERNEL // This is approach 1 implementation
+#if defined(KERNEL) || defined(SPLINE_KERNEL) // This is approach 1 implementation
 	this->mass = 0.02f; // Adapted
 	this->h = 0.04f; // Adapted
 	this->h_square = h*h; // Adapted
@@ -165,6 +165,7 @@ SPHSystem::SPHSystem()
 	grid_num = gridSize.x * gridSize.y * gridSize.z;
 	Gravity.x = Gravity.z = 0.0f;
 	Gravity.y = -9.8f;
+
 }
 
 SPHSystem::~SPHSystem() {
@@ -184,7 +185,12 @@ SPHSystem::~SPHSystem() {
 
 void SPHSystem::MarchingCubeSetUp() {
 	cubePerAxies = MESH_RESOLUTION; // The minimal cube number on an axies
+#ifdef LINUX
 	cubeSize= min(WORLDSIZE_X, min(WORLDSIZE_Y, WORLDSIZE_Z)) / float(cubePerAxies); // The length of the cube
+#endif
+#ifdef WINDOWS
+	cubeSize = std::fmin(WORLDSIZE_X, std::fmin(WORLDSIZE_Y, WORLDSIZE_Z)) / float(cubePerAxies); // The length of the cube
+#endif
 	cubeCount.x = WORLDSIZE_X / cubeSize; // Cube number on X-axies
 	cubeCount.y = WORLDSIZE_Y / cubeSize; // Cube number on Y-axies
 	cubeCount.z = WORLDSIZE_Z / cubeSize; // Cube number on Z-axies
@@ -253,6 +259,7 @@ void SPHSystem::generateParticles() {
 				addParticle(pos, vel);
 			}
 
+#ifdef ENABLE_BOUNDARY_PARTICLE
 	// The boundary particle position is a small positive number more than zero or a number that is slightly smaller than the boundary to avoid Rounding Error
 	pos.y = BOUNDARY;
 	for (pos.x = 0.0f; pos.x < worldSize.x; pos.x = pos.x + h* BOUNDARY_PARTICLE_INTERVAL)
@@ -283,6 +290,7 @@ void SPHSystem::generateParticles() {
 	for (pos.y = 0.0f; pos.y < worldSize.y; pos.y = pos.y + h* BOUNDARY_PARTICLE_INTERVAL)
 		for (pos.x = 0.0f; pos.x < worldSize.x; pos.x = pos.x + h*BOUNDARY_PARTICLE_INTERVAL)
 			addBoundaryParticle(pos, vel, false);
+#endif
 
 	// Spherical Object
 	//Float3 center;

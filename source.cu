@@ -1488,6 +1488,18 @@ void DFSPHSetUp(Particle* dParticles, Param* param, uint* dParticleIndex, uint* 
 	DFSPHCommputeDensityAndFactorAlpha << <hParam->BLOCK, hParam->THREAD >> >(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 }
 
+#ifdef TIMER
+#ifdef DENSITY_SOLVER_TIMER
+PhysicalEngineTimer densitySolverTimer(DENSITYSOVLER_TIMEDATA_FILEAPTH);
+#endif
+#ifdef DIVERGENCE_SOLVER_TIMER
+PhysicalEngineTimer divergenceSolverTimer(DIVERGENCESOLVER_TIMEDATE_FILEPATH);
+#endif
+#ifdef NEIGHBOR_SEARCHING_TIMER
+PhysicalEngineTimer neighborSearchingTimer(NEIGHBOR_SEARCHING_TIMEDATA_FILEPATH);
+#endif
+#endif
+
 void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* dCubes, Float3* dTriangles, Param* hParam,
 	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd) {
 
@@ -1523,6 +1535,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	// Thes we can calculate the average density of particles in the next frame
 	// If the difference between next frame and current frame is less than the threshold, then we can quit the solver and announce that the density has been adjusted.
 	// But in case of the non-convergent result, we set the maximal iteration time to 100
+#if defined(TIMER) && defined(DENSITY_SOLVER_TIMER)
+	densitySolverTimer.start();
+#endif
 	while ((hIsGood == 0 || counter < 2) && counter < 100) {
 		// Clear the average density.
 		DFSPHClear<<<1,1>>>(param);
@@ -1536,6 +1551,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 		printf("DENSITY SOLVER ITERATION %d\n", counter);
 		counter++;
 	}
+#if defined(TIMER) && defined(DENSITY_SOLVER_TIMER)
+	densitySolverTimer.end();
+#endif
 #endif
 	// Density Error Solver //
 
@@ -1545,6 +1563,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 
 
 	// Rehashing
+#if defined(TIMER) && defined(NEIGHBOR_SEARCHING_TIMER)
+	neighborSearchingTimer.start();
+#endif
 	cudaMemset(dCellIndex, 0xffffffff, hParam->num_particles * sizeof(uint));
 	cudaMemset(dParticleIndex, 0xffffffff, hParam->num_particles * sizeof(uint));
 	cudaMemset(dStart, 0xffffffff, hParam->cells_total * sizeof(uint));
@@ -1552,7 +1573,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	generateHashTable << <hParam->BLOCK, hParam->THREAD >> > (dParticles, dParticleIndex, dCellIndex, param);
 	sort_particles(dCellIndex, dParticleIndex, hParam->num_particles);
 	find_start_end_kernel << <hParam->BLOCK, hParam->THREAD >> > (dStart, dEnd, dCellIndex, dParticleIndex, hParam->num_particles);
-
+#if defined(TIMER) && defined(NEIGHBOR_SEARCHING_TIMER)
+	neighborSearchingTimer.end();
+#endif
 	// Calculate the new density and alpha factor based on the new particle position.
 	DFSPHCommputeDensityAndFactorAlpha << <hParam->BLOCK, hParam->THREAD >> >(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 
@@ -1561,6 +1584,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	hIsGood = 0;
 	counter = 0;
 	cudaMemcpy(dIsGood, &hIsGood, sizeof(int), cudaMemcpyHostToDevice);
+#if defined(TIMER) && defined(DIVERGENCE_SOLVER_TIMER)
+	divergenceSolverTimer.start();
+#endif
 	while ((hIsGood == 0 || counter < 1) && counter < 100) {
 		DFSPHClearV<<<1,1>>>(param);
 		DFSPHDivergenceSolver1 << <hParam->BLOCK, hParam->THREAD >> > (dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd, dIsGood);
@@ -1570,6 +1596,9 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 		printf("DIVERGENCE SOLVER ITERATION %d\n", counter);
 		counter++;
 	}
+#if defined(TIMER) && defined(DIVERGENCE_SOLVER_TIMER)
+	divergenceSolverTimer.end();
+#endif
 #endif
 	// Divergence Error Solver //
 

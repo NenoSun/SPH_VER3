@@ -1,21 +1,28 @@
 #include "Configuration.h"
 #ifdef TIMER
+#include <vector>
 #ifndef __SPHTIMER_H__
 #define __SPHTIMER_H__
 #include <windows.h>
+#include <iostream>
+#include <fstream>
 
 class Timer
 {
-private:
-	int frames;
-	int update_time;
-	int last_time;
-	double FPS;
-
 public:
-	Timer();
+	int startTime;
+	int lastTime;
+	std::vector<int> records;
+	bool isStarted;
+	std::ofstream file;
+	int frameCount;
+
+
+	Timer(const std::string a);
+	~Timer();
+	void start();
 	void update();
-	double get_fps();
+	void end();
 };
 
 #endif

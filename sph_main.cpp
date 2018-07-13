@@ -30,8 +30,8 @@
 
 SPHSystem *sph;
 
-#ifdef TIMER
-Timer *sph_timer;
+#if defined(TIMER) && defined(FRAME_TIMER)
+Timer timer(FRAME_TIMEDATA_FILEPATH);
 #endif
 
 char *window_title;
@@ -183,9 +183,6 @@ void init_sph_system()
 	sph = new SPHSystem();
 	sph->generateParticles();
 
-#ifdef TIMER
-	sph_timer = new Timer();
-#endif
 	window_title = (char *)malloc(sizeof(char) * 50);
 }
 
@@ -222,24 +219,8 @@ void render_particles()
 {
 	glPointSize(4.0f);
 	glColor3f(0.2f, 0.2f, 1.0f);
-	std::cout << sph->sys_running << std::endl;
 
-	//float avg = 0.0f;
-	//for(uint i = 0; i < sph->num_particles; i++){
-	//	avg += sph->hParticles[i].vel_scalar;
-	//}
-	//avg = avg / sph->num_particles;
-
-	//float standardDeviation = 0.0f;
-	//for(int i = 0;i < sph->num_particles; i++){
-	//	standardDeviation += (sph->hParticles[i].vel_scalar - avg) * (sph->hParticles[i].vel_scalar - avg);
-	//}
-	//standardDeviation = sqrt(standardDeviation / sph->num_particles);
-
-	//for(int i = 0;i < sph->num_particles; i++){
-	//	sph->hParticles[i].vel_scalar = (sph->hParticles[i].vel_scalar - avg)/standardDeviation;
-	//}
-
+#ifdef PARTICLE_VELOCITY_RAMP
 	float minVel = 100000;
 	float maxVel = -11;
 
@@ -253,6 +234,7 @@ void render_particles()
 	}
 
 	float vel_diff = maxVel - minVel;
+#endif
 
 
 	for (uint i = 0; i<sph->num_particles; i++)
@@ -263,7 +245,11 @@ void render_particles()
 		  		sph->hParticles[i].pos.y / WORLDSIZE_Y - WORLDSIZE_Y / 2.0,
 		  		sph->hParticles[i].pos.z / WORLDSIZE_Z - WORLDSIZE_Z / 2.0);
 #endif				  
+#ifdef PARTICLE_VELOCITY_RAMP
 		glColor3f((sph->hParticles[i].vel_scalar - minVel)/3.0, (sph->hParticles[i].vel_scalar - minVel)/3.0, 0.9f);
+#else
+		glColor3f(0.1f, 0.1f, 0.9f);
+#endif
 		glBegin(GL_POINTS);
 		glVertex3f(sph->hParticles[i].pos.x*sim_ratio.x + real_world_origin.x,
 			sph->hParticles[i].pos.y*sim_ratio.y + real_world_origin.y,
@@ -348,6 +334,13 @@ float light_position[] = { -10.0f, -10.0f, -10.0f, 1.0f };
 int cou = 0;
 void display_func()
 {
+#if defined(TIMER) && defined(FRAME_TIMER)
+	if (sph->sys_running == 1 && !timer.isStarted) {
+		timer.isStarted = true;
+		timer.start();
+	}
+#endif
+
 	glClearColor(0.75f, 0.75f, 0.75f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -394,11 +387,8 @@ void display_func()
 	
 	glutSwapBuffers();
 	
-#ifdef TIMER
-	sph_timer->update();
-	memset(window_title, 0, 50);
-	sprintf(window_title, "SPH System 3D. FPS: %f", sph_timer->get_fps());
-	glutSetWindowTitle(window_title);
+#if defined(TIMER) && defined(FRAME_TIMER)
+	timer.update();
 #endif
 
 #ifdef ENABLE_FRAME_CAPTURE

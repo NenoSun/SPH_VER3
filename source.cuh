@@ -5,6 +5,7 @@
 #include <cuda.h>
 #include "Param.h"
 #include "Type.cuh"
+#include "PhysicalEngineTimer.h"
 
 
 void GPU(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex,  uint* dStart, uint* dEnd,  cube* dCubes, Float3* dTriangles, Param* hParam);
