@@ -12,6 +12,7 @@
 #include <sstream>
 #include "Configuration.h"
 #include "PhysicalEngineTimer.h"
+#include "CpuDFSPH.h"
 
 
 #define PI 3.1415926

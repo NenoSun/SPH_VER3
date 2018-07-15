@@ -11,11 +11,6 @@
 #define BOUNDARY 0.01f
 
 
-#define ITERATE_NEIGHBOR for(int x = -1; x <= 1; x++)\
-for(int y = -1; y <= 1; y++)\
-for(int z = -1; z <= 1; z++)
-
-
 void printDeviceProp(const cudaDeviceProp &prop)
 {
 	printf("Device Name : %s.\n", prop.name);
@@ -116,7 +111,7 @@ void sort_particles(uint *dHash, uint *dIndex, uint num_particle)
 	catch (thrust::system_error &e)
 	{
 		std::cerr << "CUDA error after cudaSetDevice: " << e.what() << std::endl;
-		system("pause");
+		//system("pause");
 	}
 }
 
@@ -213,7 +208,7 @@ __global__ static void computeDensAndPres(Particle* particles, Param* param, uin
 
 #ifdef SPLINE_KERNEL
 	ITERATE_NEIGHBOR{
-		neighborPos.x = cellPos.x + x;
+	neighborPos.x = cellPos.x + x;
 	neighborPos.y = cellPos.y + y;
 	neighborPos.z = cellPos.z + z;
 	hash = computeCellHash(neighborPos, param);

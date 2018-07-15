@@ -218,7 +218,7 @@ void SPHSystem::MarchingCubeSetUp() {
 	printf("CubeSize: %f\n", cubeSize);
 	printf("Cube Num: %d\n", cube_num);
 
-	// Give up CPU Version
+
 	hCubes = (cube*)malloc(sizeof(cube)*cube_num);
 	hTriangles = (Float3*)malloc(sizeof(Float3) * 15 * cube_num);
 	hNorms = (Float3*)malloc(sizeof(Float3) * 15 * cube_num);
@@ -416,6 +416,8 @@ void SPHSystem::animation() {
 	}
 	DFSPHLoop(dParticles, dParam, dParticleIndex, dCellIndex, dStart, dEnd, dCubes, dTriangles, hParam,
 			  dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
+
+	
 
 // Normal SPH simulation
 #else
