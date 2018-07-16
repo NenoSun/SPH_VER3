@@ -129,6 +129,12 @@ struct Float3 {
 	float Dot(Float3 a) {
 		return x*a.x + y*a.y + z*a.z;
 	}
+
+	float cpu_Dist(Float3 a) {
+		float b = (x - a.x)*(x - a.x) + (y - a.y)*(y - a.y) + (z - a.z)*(z - a.z);
+		float c = sqrt((x - a.x)*(x - a.x) + (y - a.y)*(y - a.y) + (z - a.z)*(z - a.z));
+		return sqrt((x - a.x)*(x - a.x) + (y - a.y)*(y - a.y) + (z - a.z)*(z - a.z));
+	}
 };
 
 __device__

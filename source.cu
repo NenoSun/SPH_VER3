@@ -1117,7 +1117,6 @@ static void DFSPHPredictDensAndVelocity(Particle* particles, Param* param, uint*
 	float dens_err = p->predict_dens - param->rest_density;
 	if(dens_err > 1e-6)
 		atomicAdd(&param->avg_dens, dens_err);
-
 }
 
 __global__

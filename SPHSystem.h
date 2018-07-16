@@ -93,6 +93,13 @@ public:
 	uint* dStart, *dEnd; // For uniform grid sorting use
 	uint* dBoundaryStart, *dBoundaryEnd; // For uniform grid sorting use
 
+#ifdef CPU_DF
+	uint* hParticleIndex, *hCellIndex; // For uniform grid sorting use
+	uint* hBoundaryParticleIndex, *hBoundaryCellIndex; // For uniform grid sorting use
+	uint* hStart, *hEnd; // For uniform grid sorting use
+	uint* hBoundaryStart, *hBoundaryEnd; // For uniform grid sorting use
+#endif
+
 
 	// Just for test
 	float isDFSPHReady;

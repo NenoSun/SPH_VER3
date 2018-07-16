@@ -19,9 +19,10 @@
 //#define PARTICLE_VELOCITY_RAMP
 
 #define DF
+#define CPU_DF
 //#define RENDER_BOUNDARY_PARTICLES
 //#define RENDER_OBJECT_PARTICLE
-//#define ENABLE_BOUNDARY_PARTICLE
+#define ENABLE_BOUNDARY_PARTICLE
 
 #define DIVERGENCE_SOLVER
 #define DENSITY_SOLVER  
@@ -47,11 +48,11 @@
 //#define WORLDSIZE_Y 4.0f
 //#define WORLDSIZE_Z 2.0f
 
-#define WORLDSIZE_X 0.64f
-#define WORLDSIZE_Y 0.64f
-#define WORLDSIZE_Z 0.64f
+#define WORLDSIZE_X 1.0f
+#define WORLDSIZE_Y 1.0f
+#define WORLDSIZE_Z 1.0f
 
-#define INTERVAL .4f
+#define INTERVAL .5f
 //#define INTERVAL 2.0f
 #define BOUNDARY_PARTICLE_INTERVAL .2f
 

@@ -1,13 +1,40 @@
+#pragma once
 #include "Configuration.h"
-#ifndef __CPUSPH__
-#define __CPUSPH__
+#ifdef CPU_DF
 #include "Type.cuh"
 #include "Param.h"
 #include <vector>
 
-static void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* dCubes, Float3* dTriangles, Param* hParam,
+void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* Cubes, Float3* Triangles, Param* Param,
 	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd);
-static void Cpu_DFSPHComputeNormals(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex);
-static void generateHashTable(Particle* particles, uint* dParticleIndex, uint* dCellIndex, Param* param);
+ void Cpu_DFSPHComputeNormals(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex);
+ void Cpu_generateHashTable(Particle* particles, uint* dParticleIndex, uint* dCellIndex, Param* param);
+ void Cpu_DFSPHDivergenceSolver2(Param* param, int *isGood);
+ void Cpu_DFSPHDivergenceSolver3(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd, int *isGood);
+ void Cpu_DFSPHDivergenceSolver1(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd, int *isGood);
+ void Cpu_DFSPHCommputeDensityAndFactorAlpha(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd);
+void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint *dParticleIndex, uint num_particle);
+ void Cpu_DFSPHDensitySolverPart2(Param* param, int *isGood);
+ void Cpu_DFSPHDensitySolverPart3(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd, int *isGood);
+ void Cpu_DFSPHPredictDensAndVelocity(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd, int *isGood);
+ void Cpu_DFSPHPredictVelocity(Particle* particles, Param* param);
+ void Cpu_DFSPHUpdateTimeStep(Particle* particles, Param* param);
+ void Cpu_DFSPHComputeVelocityScalar(Particle* particles, Param* param);
+ void Cpu_DFSPHComputeSurfaceTensionForce(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd);
+ void Cpu_DFSPHComputeForces(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex);
+ void Cpu_sort_particles(uint *dHash, uint *dIndex, int num_particle);
+void Cpu_DFSPHSetUp(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* dCubes, Float3* dTriangles, Param* hParam,
+	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd);
+ void Cpu_DFSPHUpdatePosition(Particle* particles, Param* param);
+ uint Cpu_computeCellHash(Uint3 cellPos, Param* param);
+ Uint3 Cpu_computeCellPosition(Float3 pos, Param* param);
+ void Cpu_computeBorderPsi(Particle* dParticle, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd);
+ void generateHashTable_Boundary(Particle* particles, uint* dParticleIndex, uint* dCellIndex, Param* param);
 
 #endif
