@@ -68,6 +68,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 	Cpu_find_start_end_kernel(dStart, dEnd, dCellIndex, dParticleIndex, param->num_particles);
 	Cpu_DFSPHCommputeDensityAndFactorAlpha(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 
+#ifdef DIVERGENCE_SOLVER
 	dIsGood = 0;
 	counter = 0;
 	while ((dIsGood == 0 || counter < 1) && counter < 100) {
@@ -78,6 +79,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 		printf("DIVERGENCE SOLVER ITERATION %d\n", counter);
 		counter++;
 	}
+#endif
 }
 
  void Cpu_DFSPHComputeNormals(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex) {
@@ -296,6 +298,26 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 				p->acc += K_ij * temp;
 			}
 		}
+#ifdef ENABLE_BOUNDARY_PARTICLE
+		if (dBoundaryStart[hash] < param->num_boundary_particles) {
+			for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
+				Particle *j = &dBoundaryParticles[dBoundaryParticleIndex[count]];
+				float distance = j->pos.Dist(p->pos);
+				float distanceSquare = distance * distance;
+				float q = distance / param->h;
+				if (q > 1 || q <= 0)
+					continue;
+
+				Float3 deltaR = p->pos - j->pos;
+
+				if (deltaR.NormSquare() > 1.0e-9) {
+					deltaR = (1.0 / deltaR.Norm()) * deltaR;
+					if (q > 0.5)
+						p->acc -= param->surf_tens_coff * j->Psi * deltaR * param->Adhesion_coff * pow(-4.0 * distanceSquare / param->h + 6.0f*distance - 2.0f*param->h, 0.25);
+				}
+			}
+		}
+#endif
 		}
 	}
 }
@@ -372,6 +394,27 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 					p->predict_dens += param->mass * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR.Dot(deltaV) / distance;
 			}
 		}
+#ifdef ENABLE_BOUNDARY_PARTICLE
+
+		if (dBoundaryStart[hash] < param->num_boundary_particles) {
+			for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
+				Particle *j = &dBoundaryParticles[dBoundaryParticleIndex[count]];
+				float distance = j->pos.Dist(p->pos);
+				float q = distance / param->h;
+				if (q > 1 || q <= 0)
+					continue;
+
+				Float3 deltaR = p->pos - j->pos;
+				Float3 deltaV = p->vel - j->vel;
+
+				// Compute Density
+				if (q <= 0.5)
+					p->predict_dens += j->Psi * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR.Dot(deltaV) / distance;
+				else if (q <= 1)
+					p->predict_dens += j->Psi * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR.Dot(deltaV) / distance;
+			}
+		}
+#endif
 		}
 
 		p->predict_dens = p->dens + param->timeStep * p->predict_dens;
@@ -430,6 +473,30 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 				}
 			}
 		}
+#ifdef ENABLE_BOUNDARY_PARTICLE
+
+		if (dBoundaryStart[hash] < param->num_boundary_particles) {
+			for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
+				Particle *j = &dBoundaryParticles[dBoundaryParticleIndex[count]];
+				float distance = j->pos.Dist(p->pos);
+				float q = distance / param->h;
+				if (q > 1 || q <= 0)
+					continue;
+
+				Float3 deltaR = p->pos - j->pos;
+
+				if (ki <= -1e-6 || ki >= 1e-6) {
+					if (q <= 0.5) {
+						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+					}
+
+					else if (q <= 1) {
+						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
+					}
+				}
+			}
+		}
+#endif
 		}
 	}
 }
@@ -443,21 +510,6 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 	if (-0.1 < param->avg_dens && param->avg_dens < 0.1)
 		*isGood = 1;
 }
-
-// void Cpu_find_start_end_kernel2(uint *dStart, uint *dEnd, uint *dCellIndex, uint *dParticleIndex, uint num_particle) {
-//	for (int index = 0; index < num_particle; index++) {
-//		if (index == 0) {
-//			if (dCellIndex[index] == 0xffffffff)
-//				;
-//		}
-//		else if (index == num_particle - 1) {
-//
-//		}
-//		else {
-//
-//		}
-//	}
-//}
 
 void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint *dParticleIndex, uint num_particle)
 {
@@ -534,18 +586,6 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 		if (hash >= param->cells_total)
 			continue;
 
-		//for (int i = 0; i < param->cells_total; i++) {
-		//	if (dStart[i] == 0)
-		//		std::cout << dStart[i] << " ";
-		//}
-		//
-		//std::cout << std::endl;
-		//
-		//for (int i = 0; i < param->cells_total; i++) {
-		//	if (dStart[i] == 0)
-		//		std::cout << dEnd[i] << " ";
-		//}
-		
 		if (dStart[hash] >= 0 && dStart[hash] < param->num_particles) {
 			for (count = dStart[hash]; count <= dEnd[hash]; count++) {
 				Particle *j = &particles[dParticleIndex[count]];
@@ -576,6 +616,38 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 				}
 			}
 		}
+
+#ifdef ENABLE_BOUNDARY_PARTICLE
+		if (dBoundaryStart[hash] < 0 || dBoundaryEnd[hash] >= param->num_boundary_particles)
+			continue;
+		for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
+			Particle *j = &dBoundaryParticles[dBoundaryParticleIndex[count]];
+			float distance = j->pos.Dist(p->pos);
+			float q = distance / param->h;
+			if (q > 1 || q <= 0)
+				continue;
+
+			Float3 deltaR = p->pos - j->pos;
+
+			// Compute Density
+			if (q <= 0.5)
+				p->dens += j->Psi * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1);
+			else if (q <= 1)
+				p->dens += j->Psi * param->spline_coff * 2 * pow(1 - q, 3);
+
+			// Compute Factor Alpha 
+			if (q <= 0.5) {
+				temp2 = j->Psi * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+				p->alpha += temp2.NormSquare();
+				temp += temp2;
+			}
+			else if (q <= 1) {
+				temp2 = j->Psi * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
+				p->alpha += temp2.NormSquare();
+				temp += temp2;
+			}
+		}
+#endif
 		}
 
 
@@ -740,21 +812,6 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 		p->pos += param->timeStep * p->vel;
 	}
 }
-
-// uint Cpu_computeCellHash(Uint3 cellPos, Param* param) {
-//	if (cellPos.x>param->gridSize.x - 1 || cellPos.y>param->gridSize.y - 1 || cellPos.z>param->gridSize.z - 1)
-//		return -1;
-//
-//	return (uint)(cellPos.z*param->gridSize.x*param->gridSize.y + cellPos.y*param->gridSize.x + cellPos.x);
-//}
-//
-// Uint3 Cpu_computeCellPosition(Float3 pos, Param* param) {
-//	Uint3 cellPos;
-//	cellPos.x = (uint)floor(pos.x / param->h);
-//	cellPos.y = (uint)floor(pos.y / param->h);
-//	cellPos.z = (uint)floor(pos.z / param->h);
-//	return cellPos;
-//}
 
  void generateHashTable_Boundary(Particle* particles, uint* dParticleIndex, uint* dCellIndex, Param* param) {
 	// Each thread represents for a particle
