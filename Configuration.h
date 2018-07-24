@@ -1,33 +1,34 @@
 #ifndef CONFIGURATION
 #define CONFIGURATION
 
+/* System */
 //#define LINUX
 #define WINDOWS
 
-//#define VERTICES_TRACK
+
+/* Particle model or surface model */
 #define RENDER_PARTICLES
 //#define RENDER_MESH
+//#define RENDER_BOUNDARY_PARTICLES
+//#define RENDER_OBJECT_PARTICLE
+//#define PARTICLE_VELOCITY_RAMP
 
-//#define ENABLE_FRAME_CAPTURE
 
+/* Output .obj file? */
 //#define OUTPUT_PARTICLE_OBJECT
 //#define OUTPUT_MESH_OBJECT
 
+/* Allow frame capture? */
+//#define ENABLE_FRAME_CAPTURE
+
+
+/* Physical engine working principle */
 //#define SPLINE_KERNEL
 //#define KERNEL
-
-//#define PARTICLE_VELOCITY_RAMP
-
 #define DF
-#define CPU_DF
-//#define RENDER_BOUNDARY_PARTICLES
-//#define RENDER_OBJECT_PARTICLE
-#define ENABLE_BOUNDARY_PARTICLE
-
+//#define CPU_DF
 #define DIVERGENCE_SOLVER
-#define DENSITY_SOLVER  
-
-#define VISUAL_OPTIMIZATION
+#define DENSITY_SOLVER
 
 
 #define DOWNX .4f  
@@ -48,18 +49,25 @@
 //#define WORLDSIZE_Y 4.0f
 //#define WORLDSIZE_Z 2.0f
 
-#define WORLDSIZE_X 1.0f
-#define WORLDSIZE_Y 1.0f
-#define WORLDSIZE_Z 1.0f
+#define WORLDSIZE_X 2.0f
+#define WORLDSIZE_Y 2.0f
+#define WORLDSIZE_Z 2.0f
 
-#define INTERVAL .5f
+#define INTERVAL .40f
 //#define INTERVAL 2.0f
 #define BOUNDARY_PARTICLE_INTERVAL .2f
 
+
+/* Marching cube controller */
 #define MESH_RESOLUTION 50
 #define IOSVALUE 0.4f
 
-#define GRAVITY -9.8f
+
+/* Force controller */
+//#define GRAVITY -9.8f
+#define GRAVITY 0.0f
+//#define SURFACE_TENSION
+//#define VISCOUS_FORCE
 
 
 // TIMER CONTROL PANEL
@@ -82,4 +90,10 @@ for(int z = -1; z <= 1; z++)
 #endif // CONFIGURATION
 
 // YOU NEED TO PRESS SPACE TO START THE SIMULATION
+
+
+/* Additional options */
+//#define VERTICES_TRACK
+#define ENABLE_BOUNDARY_PARTICLE
+#define VISUAL_OPTIMIZATION
 

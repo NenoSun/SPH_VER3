@@ -889,7 +889,7 @@ static void DFSPHComputeForces(Particle* particles, Param* param, uint* dStart, 
 	Uint3 cellPos = computeCellPosition(particles[index].pos, param);
 	Particle *p = &(particles[index]);
 	p->acc.x = p->acc.z = 0;
-	p->acc.y = GRAVITY;
+	p->acc.y = 0;
 	uint count = 0;
 
 	ITERATE_NEIGHBOR{
@@ -1029,7 +1029,7 @@ static void DFSPHPredictVelocity(Particle* particles, Param* param) {
 	Particle *p = &particles[index];
 
 	p->vel.x += param->timeStep * p->acc.x;
-	p->vel.y += param->timeStep * p->acc.y;
+	p->vel.y += param->timeStep * (p->acc.y + GRAVITY);
 	p->vel.z += param->timeStep * p->acc.z;
 
 }
@@ -1500,10 +1500,13 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	// Calculate all the non-pressure force
 	DFSPHComputeNormals << <hParam->BLOCK, hParam->THREAD >> > (dParticles, param, dStart, dEnd, dParticleIndex);
 	// In this method, I only compute the viscous force. We've got another method for surface tension force computation and we add the gravity force at last.
+#ifdef VISCOUS_FORCE
 	DFSPHComputeForces << <hParam->BLOCK, hParam->THREAD >> > (dParticles, param, dStart, dEnd, dParticleIndex);
+#endif
 	// The surface tension force computing method.
+#ifdef SURFACE_TENSION
 	DFSPHComputeSurfaceTensionForce << <hParam->BLOCK, hParam->THREAD >> > (dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
-	
+#endif
 	// Adapt time step size and predict the velocity
 	// Just simply calculate the velocity scalar of each particle
 	DFSPHComputeVelocityScalar << <hParam->BLOCK, hParam->THREAD >> > (dParticles, param);

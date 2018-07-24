@@ -37,13 +37,18 @@ void Cpu_DFSPHSetUp(Particle* dParticles, Param* param, uint* dParticleIndex, ui
 void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* Cubes, Float3* Triangles, Param* Param,
 	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd) {
 	Cpu_DFSPHComputeNormals(dParticles, param, dStart, dEnd, dParticleIndex);
+#ifdef VISCOUS_FORCE
 	Cpu_DFSPHComputeForces(dParticles, param, dStart, dEnd, dParticleIndex);
+#endif
+#ifdef SURFACE_TENSION
 	Cpu_DFSPHComputeSurfaceTensionForce(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
+#endif SURFACE_TENSION
 	Cpu_DFSPHComputeVelocityScalar(dParticles, param);
 	Cpu_DFSPHUpdateTimeStep(dParticles, param);
 	Cpu_DFSPHPredictVelocity(dParticles, param);
 	int counter = 0;
 	int dIsGood = 0;
+#ifdef DENSITY_SOLVER
 	while ((dIsGood == 0 || counter < 2) && counter < 100) {
 		param->avg_dens = 0.0f;
 		Cpu_DFSPHPredictDensAndVelocity(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd, &dIsGood);
@@ -52,7 +57,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 		printf("DENSITY SOLVER ITERATION %d\n", counter);
 		counter++;
 	}
-
+#endif
 	Cpu_DFSPHUpdatePosition(dParticles, param);
 
 	for (int i = 0; i < param->num_particles; i++) {
@@ -221,7 +226,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 		Uint3 cellPos = Cpu_computeCellPosition(particles[index].pos, param);
 		Particle *p = &(particles[index]);
 		p->acc.x = p->acc.z = 0;
-		p->acc.y = GRAVITY;
+		p->acc.y = 0;
 		uint count = 0;
 
 		ITERATE_NEIGHBOR{
@@ -352,7 +357,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 		Particle *p = &particles[index];
 
 		p->vel.x += param->timeStep * p->acc.x;
-		p->vel.y += param->timeStep * p->acc.y;
+		p->vel.y += param->timeStep * ( p->acc.y + GRAVITY) ;
 		p->vel.z += param->timeStep * p->acc.z;
 	}
 }
@@ -809,7 +814,7 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
  void Cpu_DFSPHUpdatePosition(Particle* particles, Param* param) {
 	for (int index = 0; index < param->num_particles; index++) {
 		Particle *p = &particles[index];
-		p->pos += param->timeStep * p->vel;
+		p->pos += param->timeStep * ( p->vel );
 	}
 }
 
