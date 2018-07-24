@@ -911,11 +911,11 @@ static void DFSPHComputeForces(Particle* particles, Param* param, uint* dStart, 
 				Float3 delta_v = p->vel - j.vel;
 	
 				if (q <= 0.5) {
-					p->acc -= param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1) / param->timeStep;
+					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1) / param->timeStep;
 				}
 	
 				else if (q <= 1) {
-					p->acc -= param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3) / param->timeStep;
+					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3) / param->timeStep;
 				}
 			}
 		}
@@ -965,7 +965,7 @@ static void DFSPHComputeSurfaceTensionForce(Particle* particles, Param* param, u
 
 				temp -= param->surf_tens_coff * param->h * (p->norm - j.norm);
 
-				p->acc += K_ij * temp;
+				p->acc += SURFACE_TENSION_COEFFICIENT * K_ij * temp;
 			}
 		}
 
@@ -984,7 +984,7 @@ static void DFSPHComputeSurfaceTensionForce(Particle* particles, Param* param, u
 				if(deltaR.NormSquare() > 1.0e-9){
 					deltaR = (1.0 / deltaR.Norm()) * deltaR;
 					if(q > 0.5)
-						p->acc -= param->surf_tens_coff * j->Psi * deltaR * param->Adhesion_coff * pow(-4.0 * distanceSquare / param->h + 6.0f*distance - 2.0f*param->h, 0.25);
+						p->acc -= SURFACE_TENSION_COEFFICIENT * param->surf_tens_coff * j->Psi * deltaR * param->Adhesion_coff * pow(-4.0 * distanceSquare / param->h + 6.0f*distance - 2.0f*param->h, 0.25);
 				}
 			}
 		}	
@@ -1174,10 +1174,10 @@ static void DFSPHDensitySolverPart3(Particle* particles, Param* param, uint* dSt
 				float tk = ki + kj;
 				if (-1e-6 >= tk || tk >= 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * tk * param->mass * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * tk * param->mass * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 					else if (q <= 1) {
-						p->vel += param->timeStep * tk * param->mass * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * tk * param->mass * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
 					}
 				}
 			}
@@ -1197,11 +1197,11 @@ static void DFSPHDensitySolverPart3(Particle* particles, Param* param, uint* dSt
 	
 				if (ki <= -1e-6 || ki >= 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * ki * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 	
 					else if (q <= 1) {
-						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR/ distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * ki * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR/ distance;
 					}
 				}
 			}
@@ -1258,6 +1258,7 @@ static void DFSPHComputeGradDensity(Particle* particles, Param* param, uint* dSt
 		}
 	}
 
+#ifdef ENABLE_BOUNDARY_PARTICLE
 	if (dBoundaryStart[hash] < 0 || dBoundaryStart[hash] >= param->num_boundary_particles)
 		continue;
 	for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
@@ -1276,6 +1277,7 @@ static void DFSPHComputeGradDensity(Particle* particles, Param* param, uint* dSt
 		else if (q <= 1)
 			p->grad_dens += j->Psi * param->grad_spline_coff * (-1) * pow(1 - q, 2) *(deltaV.Dot(deltaR)) / distance / param->h;
 	}
+#endif
 	}
 }
 
@@ -1329,6 +1331,7 @@ static void DFSPHDivergenceSolver1(Particle* particles, Param* param, uint* dSta
 			}
 		}
 
+#ifdef ENABLE_BOUNDARY_PARTICLE
 		if (dBoundaryStart[hash] < 0 || dBoundaryStart[hash] >= param->num_boundary_particles)
 			continue;
 		for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
@@ -1348,6 +1351,7 @@ static void DFSPHDivergenceSolver1(Particle* particles, Param* param, uint* dSta
 			else if (q <= 1)
 				p->grad_dens += j->Psi * param->grad_spline_coff * (-1) * pow(1 - q, 2) *(deltaV.Dot(deltaR)) / distance;
 		}
+#endif
 	}
 
 
@@ -1410,15 +1414,16 @@ static void DFSPHDivergenceSolver3(Particle* particles, Param* param, uint* dSta
 				float tk = ki + kj;
 				if (tk < -1e-6 || tk > 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * param->mass * param->grad_spline_coff*(ki + kj) * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * param->mass * param->grad_spline_coff*(ki + kj) * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 					else if (q <= 1) {
-						p->vel += param->timeStep*param->mass * param->grad_spline_coff * (ki + kj) * (-1) * pow(1 - q, 2) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep*param->mass * param->grad_spline_coff * (ki + kj) * (-1) * pow(1 - q, 2) * deltaR / distance;
 					}
 				}
 			}
 		}
 
+#ifdef ENABLE_BOUNDARY_PARTICLE
 		if (dBoundaryStart[hash] < 0 || dBoundaryStart[hash] >= param->num_boundary_particles)
 			continue;
 		for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
@@ -1433,13 +1438,14 @@ static void DFSPHDivergenceSolver3(Particle* particles, Param* param, uint* dSta
 			// Compute Density
 			if (ki < -1e-6 || ki > 1e-6) {
 				if (q <= 0.5) {
-					p->vel += param->timeStep * j->Psi * param->grad_spline_coff * (ki)* q * (3.0f*q - 2.0f) * deltaR / distance;
+					p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * param->grad_spline_coff * (ki)* q * (3.0f*q - 2.0f) * deltaR / distance;
 				}
 				else if (q <= 1) {
-					p->vel += param->timeStep * j->Psi * param->grad_spline_coff * (ki) * (-1) * pow(1 - q, 2) * deltaR / distance;
+					p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * param->grad_spline_coff * (ki) * (-1) * pow(1 - q, 2) * deltaR / distance;
 				}
 			}
 		}
+#endif
 	}
 }
 
@@ -1526,7 +1532,7 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	cudaMemcpy(dIsGood, &hIsGood, sizeof(int), cudaMemcpyHostToDevice);
 	int volatile counter = 0;
 #endif
-#ifdef DENSITY_SOLVER
+#if defined(DENSITY_SOLVER) && defined(PRESSURE_FORCE)
 	// After each iteration, we can get a newly predicted velocity which will give the paritcles' position of next frame
 	// The Lagrangian method computes the density of the paritcle through the distribution of its neightboring particles
 	// Thes we can calculate the average density of particles in the next frame
@@ -1577,7 +1583,7 @@ void DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* d
 	DFSPHCommputeDensityAndFactorAlpha << <hParam->BLOCK, hParam->THREAD >> >(dParticles, param, dStart, dEnd, dParticleIndex, dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 
 	// Divergence Error Solver //
-#ifdef DIVERGENCE_SOLVER
+#if defined(DIVERGENCE_SOLVER) && defined(PRESSURE_FORCE)
 	hIsGood = 0;
 	counter = 0;
 	cudaMemcpy(dIsGood, &hIsGood, sizeof(int), cudaMemcpyHostToDevice);

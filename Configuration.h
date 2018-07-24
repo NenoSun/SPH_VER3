@@ -53,7 +53,7 @@
 #define WORLDSIZE_Y 2.0f
 #define WORLDSIZE_Z 2.0f
 
-#define INTERVAL .40f
+#define INTERVAL .49f
 //#define INTERVAL 2.0f
 #define BOUNDARY_PARTICLE_INTERVAL .2f
 
@@ -64,11 +64,14 @@
 
 
 /* Force controller */
-//#define GRAVITY -9.8f
-#define GRAVITY 0.0f
-//#define SURFACE_TENSION
-//#define VISCOUS_FORCE
-
+#define GRAVITY -9.8f
+//#define GRAVITY 0.0f
+#define SURFACE_TENSION
+#define SURFACE_TENSION_COEFFICIENT 1.0
+#define VISCOUS_FORCE
+#define VISCOUS_FROCE_COEFFICIENT 1.0 
+#define PRESSURE_FORCE
+#define PRESSURE_FORCE_COEFFICIENT 1.0
 
 // TIMER CONTROL PANEL
 //#define TIMER

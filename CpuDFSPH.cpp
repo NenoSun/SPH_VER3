@@ -248,11 +248,11 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 				Float3 delta_v = p->vel - j.vel;
 
 				if (q <= 0.5) {
-					p->acc -= param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1) / param->timeStep;
+					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1) / param->timeStep;
 				}
 
 				else if (q <= 1) {
-					p->acc -= param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3) / param->timeStep;
+					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3) / param->timeStep;
 				}
 			}
 		}
@@ -300,7 +300,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 
 				temp -= param->surf_tens_coff * param->h * (p->norm - j.norm);
 
-				p->acc += K_ij * temp;
+				p->acc += SURFACE_TENSION_COEFFICIENT * K_ij * temp;
 			}
 		}
 #ifdef ENABLE_BOUNDARY_PARTICLE
@@ -318,7 +318,7 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 				if (deltaR.NormSquare() > 1.0e-9) {
 					deltaR = (1.0 / deltaR.Norm()) * deltaR;
 					if (q > 0.5)
-						p->acc -= param->surf_tens_coff * j->Psi * deltaR * param->Adhesion_coff * pow(-4.0 * distanceSquare / param->h + 6.0f*distance - 2.0f*param->h, 0.25);
+						p->acc -= SURFACE_TENSION_COEFFICIENT * param->surf_tens_coff * j->Psi * deltaR * param->Adhesion_coff * pow(-4.0 * distanceSquare / param->h + 6.0f*distance - 2.0f*param->h, 0.25);
 				}
 			}
 		}
@@ -470,10 +470,10 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 				float tk = ki + kj;
 				if (-1e-6 >= tk || tk >= 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * tk * param->mass * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * tk * param->mass * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 					else if (q <= 1) {
-						p->vel += param->timeStep * tk * param->mass * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * tk * param->mass * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
 					}
 				}
 			}
@@ -492,11 +492,11 @@ void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uin
 
 				if (ki <= -1e-6 || ki >= 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * ki * param->grad_spline_coff * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 
 					else if (q <= 1) {
-						p->vel += param->timeStep * j->Psi * ki * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * ki * param->grad_spline_coff * (-1) * pow(1.0f - q, 2) * deltaR / distance;
 					}
 				}
 			}
@@ -704,7 +704,7 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 					p->grad_dens += param->mass * param->grad_spline_coff * (-1) * pow(1 - q, 2) * (deltaR.Dot(deltaV)) / distance;
 			}
 		}
-
+#ifdef ENABLE_BOUNDARY_PARTICLE
 		if (dBoundaryStart[hash] < 0 || dBoundaryStart[hash] >= param->num_boundary_particles)
 			continue;
 		for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
@@ -724,6 +724,7 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 			else if (q <= 1)
 				p->grad_dens += j->Psi * param->grad_spline_coff * (-1) * pow(1 - q, 2) *(deltaV.Dot(deltaR)) / distance;
 		}
+#endif
 		}
 
 
@@ -771,15 +772,16 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 				float tk = ki + kj;
 				if (tk < -1e-6 || tk > 1e-6) {
 					if (q <= 0.5) {
-						p->vel += param->timeStep * param->mass * param->grad_spline_coff*(ki + kj) * q * (3.0f*q - 2.0f) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * param->mass * param->grad_spline_coff*(ki + kj) * q * (3.0f*q - 2.0f) * deltaR / distance;
 					}
 					else if (q <= 1) {
-						p->vel += param->timeStep*param->mass * param->grad_spline_coff * (ki + kj) * (-1) * pow(1 - q, 2) * deltaR / distance;
+						p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep*param->mass * param->grad_spline_coff * (ki + kj) * (-1) * pow(1 - q, 2) * deltaR / distance;
 					}
 				}
 			}
 		}
 
+#ifdef ENABLE_BOUNDARY_PARTICLE
 		if (dBoundaryStart[hash] < 0 || dBoundaryStart[hash] >= param->num_boundary_particles)
 			continue;
 		for (count = dBoundaryStart[hash]; count <= dBoundaryEnd[hash]; count++) {
@@ -794,13 +796,14 @@ void Cpu_find_start_end_kernel(uint *dStart, uint *dEnd, uint *dCellIndex, uint 
 			// Compute Density
 			if (ki < -1e-6 || ki > 1e-6) {
 				if (q <= 0.5) {
-					p->vel += param->timeStep * j->Psi * param->grad_spline_coff * (ki)* q * (3.0f*q - 2.0f) * deltaR / distance;
+					p->vel += SURFACE_TENSION_COEFFICIENT * param->timeStep * j->Psi * param->grad_spline_coff * (ki)* q * (3.0f*q - 2.0f) * deltaR / distance;
 				}
 				else if (q <= 1) {
-					p->vel += param->timeStep * j->Psi * param->grad_spline_coff * (ki) * (-1) * pow(1 - q, 2) * deltaR / distance;
+					p->vel += SURFACE_TENSION_COEFFICIENT *param->timeStep * j->Psi * param->grad_spline_coff * (ki) * (-1) * pow(1 - q, 2) * deltaR / distance;
 				}
 			}
 		}
+#endif
 		}
 	}
 }
