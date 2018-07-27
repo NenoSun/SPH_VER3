@@ -27,8 +27,8 @@
 //#define KERNEL
 #define DF
 //#define CPU_DF
-#define DIVERGENCE_SOLVER
-#define DENSITY_SOLVER
+//#define DIVERGENCE_SOLVER
+//#define DENSITY_SOLVER
 
 
 #define DOWNX .4f  
@@ -49,12 +49,12 @@
 //#define WORLDSIZE_Y 4.0f
 //#define WORLDSIZE_Z 2.0f
 
-#define WORLDSIZE_X 2.0f
-#define WORLDSIZE_Y 2.0f
-#define WORLDSIZE_Z 2.0f
+#define WORLDSIZE_X 1.5f
+#define WORLDSIZE_Y 1.5f
+#define WORLDSIZE_Z 1.5f
 
-#define INTERVAL .49f
-//#define INTERVAL 2.0f
+//#define INTERVAL .49f
+#define INTERVAL .5f
 #define BOUNDARY_PARTICLE_INTERVAL .2f
 
 

@@ -1,23 +1,5 @@
 #include "SPHSystem.h"
 
-
-//#define WORLDSIZE 10.0f
-//#define WORLDSIZE 4.0f
-//#define WORLDSIZE .64f
-
-// DAM BREAK CONFIGURATION
-//#define DOWNX .01f  
-//#define UPX .30f  
-//#define DOWNY .01f
-//#define UPY .40f
-//#define DOWNZ .01f
-//#define UPZ 0.99f
-
-// WATER DROP CONFIGURATION
-
-
-//#define INTERVAL .35f
-
 void SPHSystem::PassParamsTo_hPram(Param *param) {
 	param->mass = this->mass;
 	param->worldSize = this->worldSize;
@@ -53,11 +35,11 @@ void SPHSystem::PassParamsTo_hPram(Param *param) {
 	param->THREAD = this->THREAD;
 	param->BLOCK = this->BLOCK;
 
-	//param->SpeedOfSound = sqrt(2 * 9.8 * WORLDSIZE * UPY) / 0.1;
-	//param->B = pow(param->SpeedOfSound, 2) / 7.0f;
+#ifdef SPLINE_KERNEL
+	param->SpeedOfSound = sqrt(2 * 9.8 * WORLDSIZE_Y * UPY) / 0.1;
+	param->B = pow(param->SpeedOfSound, 2) / 7.0f;
+#endif
 	param->radius = this->hParticles[0].radius;
-
-	param->flag = false;
 
 #ifdef RENDER_MESH
 	// Marching Cube

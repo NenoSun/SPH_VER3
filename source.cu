@@ -888,8 +888,7 @@ static void DFSPHComputeForces(Particle* particles, Param* param, uint* dStart, 
 	Uint3 neighborPos;
 	Uint3 cellPos = computeCellPosition(particles[index].pos, param);
 	Particle *p = &(particles[index]);
-	p->acc.x = p->acc.z = 0;
-	p->acc.y = 0;
+	p->acc.x = p->acc.z = p->acc.y = 0;
 	uint count = 0;
 
 	ITERATE_NEIGHBOR{
@@ -911,11 +910,11 @@ static void DFSPHComputeForces(Particle* particles, Param* param, uint* dStart, 
 				Float3 delta_v = p->vel - j.vel;
 	
 				if (q <= 0.5) {
-					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1) / param->timeStep;
+					p->vel -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * (6 * pow(q, 3) - 6 * pow(q, 2) + 1);
 				}
 	
 				else if (q <= 1) {
-					p->acc -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3) / param->timeStep;
+					p->vel -= VISCOUS_FROCE_COEFFICIENT * param->vicosity_coff * (param->mass / j.dens) * delta_v * param->spline_coff * 2 * pow(1 - q, 3);
 				}
 			}
 		}

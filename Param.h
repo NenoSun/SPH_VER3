@@ -50,8 +50,6 @@ public:
 	float avg_dens;
 	float radius;
 
-	bool flag;
-
 #ifdef RENDER_MESH
 	// Marching Cube Parameters
 	uint cubePerAxies;
