@@ -23,7 +23,7 @@
 #define POLY6_KERNEL(x)  (poly6_coff * pow(h_square - x, 3))
 #define POLY6_GRAD_KERNEL(x) a;
 
-#define CUBE_HASH(i,j,k) (k*cubeCount.x*cubeCount.y+ j*cubeCount.x + i)
+#define CUBE_HASH(i,j,k) (k*parameters.cubeCount.x*parameters.cubeCount.y+ j*parameters.cubeCount.x + i)
 #define SQUARE(x) (x*x)
 
 using namespace std;
@@ -34,57 +34,9 @@ class SPHSystem
 {
 public:
 	int sys_running;  // Indicates the runnning status of the system.
-	// Particles world parameters
-	uint num_max; // Maxmimal particle number, it doesn't work.
-	float mass; // The mass of each particle. 
-
-	uint num_particles; // The current particle number
-	uint num_boundary_p; // The boundary particle number
-
-	// Hash
-	Float3 worldSize;  // The Box size
-	Uint3 gridSize; // The grid size
-	uint grid_num; // How many grids there are
-	float cell_size; // How many cells there are
-
-	// Function parameters
-	float h; // Finite support radius
-	float h_square; // The square of finite support radius, reduce calculation complexity
-	float rest_density; // Rest density
-	float l_threshold; // 
-	float timeStep; // timestep between each frame. The timestep is not fixed here. It changes based on the distribution of fluid particles.
-
-
-	// Coefficients of different formular
-	float gas_stiffness; 
-	float vicosity_coff;
-	float surf_tens_coff;
-	float wall_damping;
-
-
-	// The coefficient of different kernels (Poly6 Kernel, Spiky Kernel and Viscosity Kernel)
-	float poly6_coff;
-	float grad_spiky_coff;
-	float lplc_visco_coff;
-	float grad_poly6;
-	float lplc_poly6;
-	float spline_coff;
-	float grad_spline_coff;
-	float cohesion_coff;
-	float cohesion_term;
-	float Adhesion_coff;
-
-
-	// Temporary parameters
-	uint hash;
-	Uint3 neightborPos;
-	Float3 Gravity;
-	Float3 sim_ratio;
-
+	Param parameters;
 
 	// GPU Function
-	int BLOCK; // Block number
-	int THREAD; // Thread number
 	Particle *hBoundaryParticles, *dBoundaryParticles; // Array of boundary particles. One for the host ( Main memory ) , one for the device ( GPU memory )
 	Particle* dParticles, *hParticles;  // Array of fluid particles. One for the host ( Main memory ) , one for the device ( GPU memory )
 	Param *dParam, *hParam; // Parameter object. 
@@ -127,22 +79,11 @@ public:
 
 public:
 	// Marching cube part
-	float isovalue; // Determine whether a vertex should be inside or outside.
-	cube *hCubes, *dCubes; 
-	float cubeSize;
-	uint cubePerAxies;
-	Uint3 cubeCount;
-	uint cube_num;
+	cube *hCubes, *dCubes;
 	Float3 *hTriangles, *dTriangles;
 	Float3 *hNorms, *dNorms;
-
-
-
 	void MarchingCubeSetUp();
 	void MarchingCubeRun();
-	void MarchingCubeGenerateFirstCubes();
-
-	float calDistance(Float3 p1, Float3 p2);
 };
 
 #endif

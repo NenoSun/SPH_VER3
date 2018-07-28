@@ -8,7 +8,7 @@
 
 /* Particle model or surface model */
 #define RENDER_PARTICLES
-//#define RENDER_MESH
+#define RENDER_MESH
 //#define RENDER_BOUNDARY_PARTICLES
 //#define RENDER_OBJECT_PARTICLE
 //#define PARTICLE_VELOCITY_RAMP
@@ -26,9 +26,9 @@
 //#define SPLINE_KERNEL
 //#define KERNEL
 #define DF
-//#define CPU_DF
-//#define DIVERGENCE_SOLVER
-//#define DENSITY_SOLVER
+#define CPU_DF
+#define DIVERGENCE_SOLVER
+#define DENSITY_SOLVER
 
 
 #define DOWNX .4f  

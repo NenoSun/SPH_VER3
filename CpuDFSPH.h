@@ -5,6 +5,7 @@
 #include "Param.h"
 #include <vector>
 
+
 void Cpu_DFSPHLoop(Particle* dParticles, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd, cube* Cubes, Float3* Triangles, Param* Param,
 	Particle* dBoundaryParticles, uint* dBoundaryParticleIndex, uint* dBoundaryCellIndex, uint* dBoundaryStart, uint* dBoundaryEnd);
  void Cpu_DFSPHComputeNormals(Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex);
@@ -36,5 +37,11 @@ void Cpu_DFSPHSetUp(Particle* dParticles, Param* param, uint* dParticleIndex, ui
  Uint3 Cpu_computeCellPosition(Float3 pos, Param* param);
  void Cpu_computeBorderPsi(Particle* dParticle, Param* param, uint* dParticleIndex, uint* dCellIndex, uint* dStart, uint* dEnd);
  void generateHashTable_Boundary(Particle* particles, uint* dParticleIndex, uint* dCellIndex, Param* param);
+ void Cpu_MC_Run(cube* dCubes, Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex);
+ void Cpu_MC_ComputeNormal(cube* dCubes, Param* param);
+ void Cpu_MC_Run2(cube* dCubes, Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex, Float3* dTriangles, Float3* dNorms);
+ void Cpu_MC_RUN_ONE_TIME(cube *dCubes, Particle *dParticles, Param *param, uint* dStart, uint* dEnd, uint* dParticleIndex, Float3*dTriangles, Float3* dNorms, Param* hParam);
+
+
 
 #endif

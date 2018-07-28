@@ -206,12 +206,12 @@ void init()
 
 void init_ratio()
 {
-	sim_ratio.x = real_world_side.x / sph->worldSize.x; 
-	sim_ratio.y = real_world_side.y / sph->worldSize.y; 
-	sim_ratio.z = real_world_side.z / sph->worldSize.z; 
-	sph->sim_ratio.x = sim_ratio.x;
-	sph->sim_ratio.y = sim_ratio.y;
-	sph->sim_ratio.z = sim_ratio.z;
+	sim_ratio.x = real_world_side.x / sph->parameters.worldSize.x; 
+	sim_ratio.y = real_world_side.y / sph->parameters.worldSize.y; 
+	sim_ratio.z = real_world_side.z / sph->parameters.worldSize.z; 
+	//sph->sim_ratio.x = sim_ratio.x;
+	//sph->sim_ratio.y = sim_ratio.y;
+	//sph->sim_ratio.z = sim_ratio.z;
 }
 
 
@@ -237,7 +237,7 @@ void render_particles()
 #endif
 
 
-	for (uint i = 0; i<sph->num_particles; i++)
+	for (uint i = 0; i<sph->parameters.num_particles; i++)
 	{
 		if(sph->sys_running == 1)
 #ifdef OUTPUT_PARTICLE_OBJ
@@ -302,9 +302,9 @@ void drawTriangles(Float3* triangles,  Float3* hNorms, uint cube_num) {
 		glBegin(GL_TRIANGLES);
 		for (int j = 0; j < 3; j++) {
 			glNormal3f(hNorms[i + j].x, hNorms[i + j].y, hNorms[i + j].z);
-			glVertex3f(triangles[i + j].x*sph->sim_ratio.x + real_world_origin.x,
-				triangles[i + j].y*sph->sim_ratio.y + real_world_origin.y,
-				triangles[i + j].z*sph->sim_ratio.z + real_world_origin.z);
+			glVertex3f(triangles[i + j].x*sim_ratio.x + real_world_origin.x,
+				triangles[i + j].y*sim_ratio.y + real_world_origin.y,
+				triangles[i + j].z*sim_ratio.z + real_world_origin.z);
 #ifdef OUTPUT_MESH_OBJECT
 			if(sph->sys_running == 1){
 				og.writeVertice(triangles[i + j].x, triangles[i + j].y, triangles[i + j].z);
@@ -365,7 +365,7 @@ void display_func()
 	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHTING);
-	drawTriangles(sph->hTriangles, sph->hNorms, sph->cube_num);
+	drawTriangles(sph->hTriangles, sph->hNorms, sph->parameters.cube_num);
 #endif
 
 #ifdef RENDER_PARTICLES

@@ -40,7 +40,6 @@ public:
 
 	Float3 worldSize;
 	Uint3 gridSize;
-	Float3 Gravity;
 	int cells_total;
 	uint num_particles;
 	uint num_boundary_particles;

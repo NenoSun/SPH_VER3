@@ -377,9 +377,9 @@ __global__ static void update(Particle* particles, Param* param) {
 	p->acc.z = (p->F_SurfaceTension.z + p->F_Pressure.z + p->F_Viscosity.z) / p->dens;
 #endif
 
-	p->vel.x = p->vel.x + p->acc.x*param->timeStep + param->Gravity.x * param->timeStep;
-	p->vel.y = p->vel.y + p->acc.y*param->timeStep + param->Gravity.y * param->timeStep;
-	p->vel.z = p->vel.z + p->acc.z*param->timeStep + param->Gravity.z * param->timeStep;
+	p->vel.x = p->vel.x + p->acc.x*param->timeStep;
+	p->vel.y = p->vel.y + p->acc.y*param->timeStep + GRAVITY * param->timeStep;
+	p->vel.z = p->vel.z + p->acc.z*param->timeStep;
 
 	p->pos.x = p->pos.x + p->vel.x *param->timeStep;
 	p->pos.y = p->pos.y + p->vel.y *param->timeStep;
