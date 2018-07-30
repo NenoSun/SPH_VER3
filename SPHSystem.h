@@ -83,7 +83,6 @@ public:
 	Float3 *hTriangles, *dTriangles;
 	Float3 *hNorms, *dNorms;
 	void MarchingCubeSetUp();
-	void MarchingCubeRun();
 };
 
 #endif

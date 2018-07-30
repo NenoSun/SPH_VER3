@@ -21,6 +21,7 @@ PhysicalEngineTimer::~PhysicalEngineTimer() {
 
 void PhysicalEngineTimer::start() {
 	startTime = GetTickCount();
+	
 }
 
 void PhysicalEngineTimer::end() {

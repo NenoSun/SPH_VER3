@@ -7,7 +7,7 @@
 
 
 /* Particle model or surface model */
-#define RENDER_PARTICLES
+//#define RENDER_PARTICLES
 #define RENDER_MESH
 //#define RENDER_BOUNDARY_PARTICLES
 //#define RENDER_OBJECT_PARTICLE
@@ -26,7 +26,7 @@
 //#define SPLINE_KERNEL
 //#define KERNEL
 #define DF
-#define CPU_DF
+//#define CPU_DF
 #define DIVERGENCE_SOLVER
 #define DENSITY_SOLVER
 
@@ -49,9 +49,9 @@
 //#define WORLDSIZE_Y 4.0f
 //#define WORLDSIZE_Z 2.0f
 
-#define WORLDSIZE_X 1.5f
-#define WORLDSIZE_Y 1.5f
-#define WORLDSIZE_Z 1.5f
+#define WORLDSIZE_X 5.5f
+#define WORLDSIZE_Y 5.5f
+#define WORLDSIZE_Z 5.5f
 
 //#define INTERVAL .49f
 #define INTERVAL .5f
@@ -59,7 +59,7 @@
 
 
 /* Marching cube controller */
-#define MESH_RESOLUTION 50
+#define MESH_RESOLUTION 80
 #define IOSVALUE 0.4f
 
 
@@ -74,16 +74,18 @@
 #define PRESSURE_FORCE_COEFFICIENT 1.0
 
 // TIMER CONTROL PANEL
-//#define TIMER
-//#define FRAME_TIMER
-//#define DENSITY_SOLVER_TIMER
-//#define DIVERGENCE_SOLVER_TIMER
-//#define NEIGHBOR_SEARCHING_TIMER
-//
-//#define FRAME_TIMEDATA_FILEPATH "D:/frameTime.txt"
-//#define DENSITYSOVLER_TIMEDATA_FILEAPTH "D:/DensitySolverTime.txt"
-//#define DIVERGENCESOLVER_TIMEDATE_FILEPATH "D:/DivergenceSolverTime.txt"
-//#define NEIGHBOR_SEARCHING_TIMEDATA_FILEPATH "D:/NeightborSearchingTime.txt"
+#define TIMER
+#define FRAME_TIMER
+#define DENSITY_SOLVER_TIMER
+#define DIVERGENCE_SOLVER_TIMER
+#define NEIGHBOR_SEARCHING_TIMER
+#define MARCHING_CUBES_TIMER
+
+#define FRAME_TIMEDATA_FILEPATH "D:/frameTime.txt"
+#define DENSITYSOVLER_TIMEDATA_FILEAPTH "D:/DensitySolverTime.txt"
+#define DIVERGENCESOLVER_TIMEDATE_FILEPATH "D:/DivergenceSolverTime.txt"
+#define NEIGHBOR_SEARCHING_TIMEDATA_FILEPATH "D:/NeightborSearchingTime.txt"
+#define MARCHING_CUBES_TIMEDATA_FILEPATH "D:/MarchingCubesTime.txt"
 // TIMER CONTROL PANEL
 
 #define ITERATE_NEIGHBOR for(int x = -1; x <= 1; x++)\

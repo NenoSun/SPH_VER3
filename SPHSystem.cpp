@@ -174,7 +174,7 @@ SPHSystem::~SPHSystem() {
 }
 
 
-
+#ifdef RENDER_MESH
 void SPHSystem::MarchingCubeSetUp() {
 	parameters.cubePerAxies = MESH_RESOLUTION; // The minimal cube number on an axies
 #ifdef LINUX
@@ -238,6 +238,8 @@ void SPHSystem::MarchingCubeSetUp() {
 
 	cudaMemcpy(dCubes, hCubes, sizeof(cube)*this->parameters.cube_num, cudaMemcpyHostToDevice);
 }
+
+#endif
 
 // CPU Function
 void SPHSystem::generateParticles() {
@@ -412,6 +414,10 @@ void SPHSystem::addBoundaryParticle(Float3 pos, Float3 vel, bool isObject) {
 	p->isObject = isObject;
 }
 
+#ifdef MARCHING_CUBES_TIMER
+PhysicalEngineTimer MCTimer(MARCHING_CUBES_TIMEDATA_FILEPATH);
+#endif
+
 void SPHSystem::animation() {
 	if (sys_running == 0)
 		return;
@@ -448,18 +454,22 @@ void SPHSystem::animation() {
 
 
 #ifdef RENDER_MESH
+#ifdef MARCHING_CUBES_TIMER
+	MCTimer.start();
+#endif
 #ifdef CPU_DF
 	Cpu_MC_RUN_ONE_TIME(hCubes, hParticles, hParam, hStart, hEnd, hParticleIndex, hTriangles, hNorms, hParam);
 #else
 	MC_RUN_ONE_TIME(dCubes, dParticles, dParam, dStart, dEnd, dParticleIndex, dTriangles, dNorms, hParam);
+#ifdef MARCHING_CUBES_TIMER
+	MCTimer.end();
+#endif
 	cudaMemcpy(hTriangles, dTriangles, sizeof(Float3)*parameters.cube_num * 15, cudaMemcpyDeviceToHost);
 	cudaMemcpy(hNorms, dNorms, sizeof(Float3)*parameters.cube_num * 15, cudaMemcpyDeviceToHost);
 #endif
 #endif
 }
 
-void SPHSystem::MarchingCubeRun() {
-}
 
 void SPHSystem::addSphericalObject(Float3 center, float radius) {
 	// Spherical Object

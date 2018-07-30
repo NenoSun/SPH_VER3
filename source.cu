@@ -629,13 +629,24 @@ __global__ static void MC_Run2(cube* dCubes, Particle* particles, Param* param, 
 	}
 }
 
+
+
 void MC_RUN_ONE_TIME(cube *dCubes, Particle *dParticles, Param *param, uint* dStart, uint* dEnd, uint* dParticleIndex, Float3*dTriangles, Float3* dNorms, Param* hParam) {
 	int MC_thread = 800;
 	int MC_block = ceil(hParam->cube_num / (float)MC_thread);
+	LARGE_INTEGER timeStart;
+	QueryPerformanceCounter(&timeStart);
 	MC_Run << <MC_block, MC_thread >> > (dCubes, dParticles, param, dStart, dEnd, dParticleIndex);
 	MC_ComputeNormal << <MC_block, MC_thread >> > (dCubes, param);
-
 	MC_Run2 << <MC_block, MC_thread >> > (dCubes, dParticles, param, dStart, dEnd, dParticleIndex, dTriangles, dNorms);
+	LARGE_INTEGER timeEnd;
+	QueryPerformanceCounter(&timeEnd);
+	LARGE_INTEGER frequency;
+	QueryPerformanceFrequency(&frequency);
+	__int64 diff = timeEnd.QuadPart - timeStart.QuadPart;
+	__int64 time = diff / frequency.QuadPart;
+	std::cout << "Marching Cube time: " << (float)diff/(float)frequency.QuadPart << std::endl;
+	std::cout << "Frequency: " << frequency.QuadPart << std::endl;
 }
 #endif
 
