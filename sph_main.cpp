@@ -27,7 +27,6 @@
 #include<cstdio>
 #endif
 
-
 SPHSystem *sph;
 
 #if defined(TIMER) && defined(FRAME_TIMER)
@@ -236,7 +235,6 @@ void render_particles()
 	float vel_diff = maxVel - minVel;
 #endif
 
-
 	for (uint i = 0; i<sph->parameters.num_particles; i++)
 	{
 		if(sph->sys_running == 1)
@@ -256,6 +254,7 @@ void render_particles()
 			sph->hParticles[i].pos.z*sim_ratio.z + real_world_origin.z);
 		glEnd();
 	}
+
 
 #ifdef OUTPUT_PARTICLE_OBJ
 	if(sph->sys_running == 1){
@@ -532,6 +531,7 @@ int main(int argc, char **argv)
 	glutMouseFunc(mouse_func);
 	glutMotionFunc(motion_func);
 	glutIdleFunc(idle_func);
+	
 
 	glutMainLoop();
 

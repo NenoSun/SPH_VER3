@@ -80,7 +80,7 @@ SPHSystem::SPHSystem()
 	parameters.worldSize.y = WORLDSIZE_Y;
 	parameters.worldSize.z = WORLDSIZE_Z;
 
-	this->sys_running = 0;
+	this->sys_running = 1;
 
 #ifdef DF  // This is approach 2 implementation
 	this->parameters.mass = 0.1f; // Adapted
