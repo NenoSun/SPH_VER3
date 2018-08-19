@@ -1,3 +1,5 @@
+// This file is original
+
 #include "Configuration.h"
 #ifdef TIMER
 #ifndef __PHYSICAL_ENGINE_TIMER

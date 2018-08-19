@@ -1,3 +1,5 @@
+// This file is mostly original
+
 #pragma once
 #include "Configuration.h"
 #ifdef CPU_DF

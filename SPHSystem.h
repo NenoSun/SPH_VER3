@@ -1,4 +1,6 @@
-//#pragma once
+// This file is mostly original with some references from the following github repository.
+// https://github.com/finallyjustice/sphfluid
+
 #ifndef SPHSYSTEM
 #define SPHSYSTEM
 
@@ -39,7 +41,8 @@ public:
 	// GPU Function
 	Particle *hBoundaryParticles, *dBoundaryParticles; // Array of boundary particles. One for the host ( Main memory ) , one for the device ( GPU memory )
 	Particle* dParticles, *hParticles;  // Array of fluid particles. One for the host ( Main memory ) , one for the device ( GPU memory )
-	Param *dParam, *hParam; // Parameter object. 
+	//Param *dParam, *hParam; // Parameter object. 
+	Param *dParam; // Parameter object. 
 	uint* dParticleIndex, *dCellIndex; // For uniform grid sorting use
 	uint* dBoundaryParticleIndex, *dBoundaryCellIndex; // For uniform grid sorting use
 	uint* dStart, *dEnd; // For uniform grid sorting use

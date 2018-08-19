@@ -1,3 +1,5 @@
+//Most of the code of this file sources from "https://github.com/finallyjustice/sphfluid"
+
 #ifndef _SPH_MAIN_CPP
 #define _SPH_MAIN_CPP
 #include "Configuration.h"
@@ -263,7 +265,7 @@ void render_particles()
 #endif;
 
 #ifdef RENDER_BOUNDARY_PARTICLES
-	for (uint i = 0; i<sph->num_boundary_p; i++)
+	for (uint i = 0; i<sph->parameters.num_boundary_particles; i++)
 	{
 		glBegin(GL_POINTS);
 		glVertex3f(sph->hBoundaryParticles[i].pos.x*sim_ratio.x + real_world_origin.x,

@@ -1,3 +1,5 @@
+// This file is original
+
 #pragma once
 #include "Configuration.h"
 #ifdef ENABLE_FRAME_CAPTURE

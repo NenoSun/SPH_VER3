@@ -1,3 +1,6 @@
+// This file sources from https://github.com/finallyjustice/sphfluid
+
+
 #ifndef __SPHDATA_H__
 #define __SPHDATA_H__
 

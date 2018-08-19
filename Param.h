@@ -1,3 +1,5 @@
+// This file is original
+
 #pragma once
 #include <math.h>
 #include "Type.cuh"

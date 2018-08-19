@@ -1,3 +1,5 @@
+// This file is original
+
 #pragma once
 #include <Windows.h>
 #include <fstream>

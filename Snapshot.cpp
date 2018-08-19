@@ -1,4 +1,5 @@
-//#include "stdafx.h"
+// This file is original
+
 #include "Configuration.h"
 #ifdef ENABLE_FRAME_CAPTURE
 #ifdef WINDOWS

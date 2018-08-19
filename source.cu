@@ -1,3 +1,7 @@
+// This file is mostly original with some references from the following two github repositories.
+// https://github.com/finallyjustice/sphfluid
+// https://github.com/InteractiveComputerGraphics/SPlisHSPlasH
+
 #include <iostream>
 #include <thrust/sort.h>
 #include <thrust/device_ptr.h>
@@ -634,19 +638,9 @@ __global__ static void MC_Run2(cube* dCubes, Particle* particles, Param* param, 
 void MC_RUN_ONE_TIME(cube *dCubes, Particle *dParticles, Param *param, uint* dStart, uint* dEnd, uint* dParticleIndex, Float3*dTriangles, Float3* dNorms, Param* hParam) {
 	int MC_thread = 800;
 	int MC_block = ceil(hParam->cube_num / (float)MC_thread);
-	LARGE_INTEGER timeStart;
-	QueryPerformanceCounter(&timeStart);
 	MC_Run << <MC_block, MC_thread >> > (dCubes, dParticles, param, dStart, dEnd, dParticleIndex);
 	MC_ComputeNormal << <MC_block, MC_thread >> > (dCubes, param);
 	MC_Run2 << <MC_block, MC_thread >> > (dCubes, dParticles, param, dStart, dEnd, dParticleIndex, dTriangles, dNorms);
-	LARGE_INTEGER timeEnd;
-	QueryPerformanceCounter(&timeEnd);
-	LARGE_INTEGER frequency;
-	QueryPerformanceFrequency(&frequency);
-	__int64 diff = timeEnd.QuadPart - timeStart.QuadPart;
-	__int64 time = diff / frequency.QuadPart;
-	std::cout << "Marching Cube time: " << (float)diff/(float)frequency.QuadPart << std::endl;
-	std::cout << "Frequency: " << frequency.QuadPart << std::endl;
 }
 #endif
 
@@ -736,6 +730,8 @@ void ComputeBoundaryParticlePsi(Particle* dParticle, Param* param, uint* dPartic
 #endif
 	int BLOCKS = ceil(hParam->num_boundary_particles / 600.0f);
 
+	printf("!!!!!!!!!!!!!!!!!! %d\n", hParam->num_particles);
+	printf("!!!!!!!!!!!!!!!!!! %d\n", hParam->num_boundary_particles);
 	generateHashTable_Boundary << <BLOCKS, THREADS >> > (dParticle, dParticleIndex, dCellIndex, param);
 	sort_particles(dCellIndex, dParticleIndex, hParam->num_boundary_particles);
 	find_start_end_kernel << <BLOCKS, THREADS >> > (dStart, dEnd, dCellIndex, dParticleIndex, hParam->num_boundary_particles);

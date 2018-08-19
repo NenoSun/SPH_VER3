@@ -1,3 +1,5 @@
+// This file sources from https://github.com/finallyjustice/sphfluid
+
 #ifndef MC_TABLE
 #define MC_TABLE
 #include "cuda_runtime.h"

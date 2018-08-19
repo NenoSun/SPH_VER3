@@ -1,3 +1,5 @@
+// This file is original
+
 #include "OBJGenerator.h"
 
 OBJGenerator::OBJGenerator(std::string filePath) {

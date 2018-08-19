@@ -1,3 +1,6 @@
+// This file sources from https://github.com/finallyjustice/sphfluid
+
+
 #include "Configuration.h"
 #ifdef TIMER
 #include "sph_timer.h"

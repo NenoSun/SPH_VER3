@@ -1,3 +1,5 @@
+// This file sources from https://github.com/finallyjustice/sphfluid
+
 void main()
 {
     const vec3 lightDir = vec3(0.577, 0.577, 0.577);

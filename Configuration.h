@@ -1,3 +1,5 @@
+// This file is completely original
+
 #ifndef CONFIGURATION
 #define CONFIGURATION
 
@@ -8,7 +10,7 @@
 
 /* Particle model or surface model */
 #define RENDER_PARTICLES
-//#define RENDER_MESH
+#define RENDER_MESH
 //#define RENDER_BOUNDARY_PARTICLES
 //#define RENDER_OBJECT_PARTICLE
 //#define PARTICLE_VELOCITY_RAMP
@@ -49,9 +51,9 @@
 //#define WORLDSIZE_Y 4.0f
 //#define WORLDSIZE_Z 2.0f
 
-#define WORLDSIZE_X 2.0f
-#define WORLDSIZE_Y 2.0f
-#define WORLDSIZE_Z 2.0f
+#define WORLDSIZE_X 1.5f
+#define WORLDSIZE_Y 1.5f
+#define WORLDSIZE_Z 1.5f
 
 //#define INTERVAL .49f
 #define INTERVAL .49f

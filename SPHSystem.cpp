@@ -1,3 +1,6 @@
+// This file is mostly original with some references from the following github repository.
+// https://github.com/finallyjustice/sphfluid
+
 #include "SPHSystem.h"
 
 void SPHSystem::PassParamsTo_hPram(Param *param) {
@@ -321,7 +324,7 @@ void SPHSystem::generateParticles() {
 	initCUDA();
 
 	// Allocate host memory
-	hParam = (Param*)malloc(sizeof(Param));
+	//hParam = (Param*)malloc(sizeof(Param));
 
 	// Allocate GPU memory
 	cudaMalloc((void**)(&dParticles), sizeof(Particle)*this->parameters.num_particles);
@@ -342,17 +345,15 @@ void SPHSystem::generateParticles() {
 
 	computeThreadsAndBlocks(600, this->parameters.num_particles);
 
-	PassParamsTo_hPram(hParam);
-
 	// Copy initial data
-	cudaMemcpy(dParam, hParam, sizeof(Param), cudaMemcpyHostToDevice);
+	cudaMemcpy(dParam, &parameters, sizeof(Param), cudaMemcpyHostToDevice);
 	cudaMemcpy(dParticles, this->hParticles, sizeof(Particle)*parameters.num_particles, cudaMemcpyHostToDevice);
 	cudaMemcpy(dBoundaryParticles, this->hBoundaryParticles, sizeof(Particle)*parameters.num_boundary_particles, cudaMemcpyHostToDevice);
 
 #ifndef CPU_DF
-	ComputeBoundaryParticlePsi(dBoundaryParticles, dParam, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd, hParam);
+	ComputeBoundaryParticlePsi(dBoundaryParticles, dParam, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd, &parameters);
 #else
-	for (int i = 0; i < hParam->num_boundary_particles; i++) {
+	for (int i = 0; i < parameters.num_boundary_particles; i++) {
 		hBoundaryCellIndex[i] = 0xffffffff;
 		hBoundaryParticleIndex[i] = 0xffffffff;
 	}
@@ -360,11 +361,11 @@ void SPHSystem::generateParticles() {
 		hBoundaryStart[i] = 0xffffffff;
 		hBoundaryEnd[i] = 0xffffffff;
 	}
-	generateHashTable_Boundary(hBoundaryParticles, hBoundaryParticleIndex, hBoundaryCellIndex, hParam);
-	Cpu_sort_particles(hBoundaryCellIndex, hBoundaryParticleIndex, hParam->num_boundary_particles);
-	Cpu_find_start_end_kernel(hBoundaryStart, hBoundaryEnd, hBoundaryCellIndex, hBoundaryParticleIndex, hParam->num_boundary_particles);
+	generateHashTable_Boundary(hBoundaryParticles, hBoundaryParticleIndex, hBoundaryCellIndex, &parameters);
+	Cpu_sort_particles(hBoundaryCellIndex, hBoundaryParticleIndex, parameters.num_boundary_particles);
+	Cpu_find_start_end_kernel(hBoundaryStart, hBoundaryEnd, hBoundaryCellIndex, hBoundaryParticleIndex, parameters.num_boundary_particles);
 
-	Cpu_computeBorderPsi(hBoundaryParticles, hParam, hBoundaryParticleIndex, hBoundaryCellIndex, hBoundaryStart, hBoundaryEnd);
+	Cpu_computeBorderPsi(hBoundaryParticles, &parameters, hBoundaryParticleIndex, hBoundaryCellIndex, hBoundaryStart, hBoundaryEnd);
 #endif
 
 
@@ -426,18 +427,18 @@ void SPHSystem::animation() {
 #ifdef DF
 #ifdef CPU_DF
 	if (!isDFSPHReady) {
-		Cpu_DFSPHSetUp(this->hParticles, this->hParam, hParticleIndex, hCellIndex, hStart, hEnd, hCubes, hTriangles, hParam,
+		Cpu_DFSPHSetUp(this->hParticles, &this->parameters, hParticleIndex, hCellIndex, hStart, hEnd, hCubes, hTriangles, &this->parameters,
 			hBoundaryParticles, hBoundaryParticleIndex, hBoundaryCellIndex, hBoundaryStart, hBoundaryEnd);
 	}
-	Cpu_DFSPHLoop(this->hParticles, this->hParam, hParticleIndex, hCellIndex, hStart, hEnd, hCubes, hTriangles, hParam,
+	Cpu_DFSPHLoop(this->hParticles, &this->parameters, hParticleIndex, hCellIndex, hStart, hEnd, hCubes, hTriangles, &this->parameters,
 		hBoundaryParticles, hBoundaryParticleIndex, hBoundaryCellIndex, hBoundaryStart, hBoundaryEnd);
 #else
 	if (!isDFSPHReady) {
-		DFSPHSetUp(dParticles, dParam, dParticleIndex, dCellIndex, dStart, dEnd, dCubes, dTriangles, hParam,
+		DFSPHSetUp(dParticles, dParam, dParticleIndex, dCellIndex, dStart, dEnd, dCubes, dTriangles, &parameters,
 			dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 		this->isDFSPHReady = true;
 	}
-	DFSPHLoop(dParticles, dParam, dParticleIndex, dCellIndex, dStart, dEnd, dCubes, dTriangles, hParam,
+	DFSPHLoop(dParticles, dParam, dParticleIndex, dCellIndex, dStart, dEnd, dCubes, dTriangles, &parameters,
 		dBoundaryParticles, dBoundaryParticleIndex, dBoundaryCellIndex, dBoundaryStart, dBoundaryEnd);
 #endif
 
@@ -449,7 +450,7 @@ void SPHSystem::animation() {
 
 	// Copy the data from GPU to host
 #ifndef CPU_DF
-	cudaMemcpy(hParticles, dParticles, sizeof(Particle)*hParam->num_particles, cudaMemcpyDeviceToHost);
+	cudaMemcpy(hParticles, dParticles, sizeof(Particle)*parameters.num_particles, cudaMemcpyDeviceToHost);
 #endif
 
 
@@ -458,9 +459,9 @@ void SPHSystem::animation() {
 	MCTimer.start();
 #endif
 #ifdef CPU_DF
-	Cpu_MC_RUN_ONE_TIME(hCubes, hParticles, hParam, hStart, hEnd, hParticleIndex, hTriangles, hNorms, hParam);
+	Cpu_MC_RUN_ONE_TIME(hCubes, hParticles, &this->parameters, hStart, hEnd, hParticleIndex, hTriangles, hNorms, &this->parameters);
 #else
-	MC_RUN_ONE_TIME(dCubes, dParticles, dParam, dStart, dEnd, dParticleIndex, dTriangles, dNorms, hParam);
+	MC_RUN_ONE_TIME(dCubes, dParticles, dParam, dStart, dEnd, dParticleIndex, dTriangles, dNorms, &this->parameters);
 #ifdef MARCHING_CUBES_TIMER
 	MCTimer.end();
 #endif

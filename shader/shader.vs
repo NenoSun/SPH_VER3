@@ -1,3 +1,5 @@
+// This file sources from https://github.com/finallyjustice/sphfluid
+
 void main()
 {
 	vec3 posEye = vec3(gl_ModelViewMatrix * vec4(gl_Vertex.xyz, 1.0));

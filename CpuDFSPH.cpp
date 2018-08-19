@@ -1,3 +1,8 @@
+// This file is mostly original with some references from the following two github repositories.
+// https://github.com/finallyjustice/sphfluid
+// https://github.com/InteractiveComputerGraphics/SPlisHSPlasH
+
+
 #include "CpuDFSPH.h"
 #ifdef CPU_DF
 #include <iostream>
@@ -1166,6 +1171,8 @@ float Cpu_dCalDistance(Float3 p1, Float3 p2) {
 	 return (p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y) + (p1.z - p2.z)*(p1.z - p2.z);
  }
 
+#ifdef RENDER_MESH
+
  void Cpu_MC_Run(cube* dCubes, Particle* particles, Param* param, uint* dStart, uint* dEnd, uint* dParticleIndex) {
 	 // Each index represents for a cube
 
@@ -1367,6 +1374,6 @@ void Cpu_MC_RUN_ONE_TIME(cube *dCubes, Particle *dParticles, Param *param, uint*
 	Cpu_MC_ComputeNormal(dCubes, param);
 	Cpu_MC_Run2(dCubes, dParticles, param, dStart, dEnd, dParticleIndex, dTriangles, dNorms);
 }
-
+#endif
 
 #endif
